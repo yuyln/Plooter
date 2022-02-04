@@ -46,7 +46,8 @@ def FixPlot(lx, ly):
                      "ytick.major.pad": 5,
                      "ytick.minor.visible": True,
                      "lines.markersize": 10,
-                     "lines.markeredgewidth": 0.8})
+                     "lines.markeredgewidth": 0.8, 
+                     "mathtext.fontset": "cm"})
 
 
 def FixTicks(ax, minorx, minory, multx, multy):
