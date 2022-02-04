@@ -11,18 +11,18 @@ x = np.linspace(-10, 10, 1000)
 y1 = np.sin(x)
 
 fig, ax = plt.subplots()
-PlottaLine(ax, x, y1, label="sin(x)")
+PlottaLine(ax, x, y1, label=r"$\sin(x)$")
 
 y2 = np.sin(2.0 * x)
-PlottaLine(ax, x, y2, label="sin(2x)")
+PlottaLine(ax, x, y2, label=r"$\sin(2x)$")
 
 nY = np.concatenate([y1, y2])
 nX = np.concatenate([x, x])
 
 FixScale(ax, nX, nY, pady=1/15, padx=1/8, mirrorx=True, mirrory=True)
 FixTicks(ax, 5, 5, 3, 0.2)
-ax.set_xlabel("x")
-ax.set_ylabel("y")
+ax.set_xlabel("$x$")
+ax.set_ylabel("$y$")
 ax.legend()
 
 fig.savefig("2dNoFit.png", dpi=500, bbox_inches='tight')
