@@ -11,7 +11,7 @@ def FixPlot(lx, ly):
     rcParams['font.size'] = 40
     rcParams['axes.linewidth'] = 1.1
     rcParams['axes.labelpad'] = 10.0
-    plot_color_cycle = cycler('color', ['000000', '0000FE', 'FE0000', '008001', 'FD8000', '8c564b',
+    plot_color_cycle = cycler('color', ['000000', 'FE0000', '0000FE', '008001', 'FD8000', '8c564b',
                                         'e377c2', '7f7f7f', 'bcbd22', '17becf'])
     rcParams['axes.prop_cycle'] = plot_color_cycle
     rcParams['axes.xmargin'] = 0
@@ -46,7 +46,6 @@ def FixPlot(lx, ly):
                      "ytick.major.pad": 5,
                      "ytick.minor.visible": True,
                      "lines.markersize": 10,
-                     "lines.markerfacecolor": "none",
                      "lines.markeredgewidth": 0.8})
 
 
@@ -133,12 +132,13 @@ def PlottaLine(ax, datax, datay, fmt="-", lw=2.5, funcx=lambda x: x, funcy=lambd
         else:
             p0 = None
 
-        popt, pcov = curve_fit(funcfit, datax, datay, maxfev=maxfev, method=method, p0=p0)
+        popt, pcov = curve_fit(funcfit, funcx(datax), funcy(datay), maxfev=maxfev, method=method, p0=p0)
         return popt, pcov, [*x, *y], a, *PlottaLine(ax, datax, funcfit(datax, *popt), '--', color=a[0].get_color(), fit=False)
 
     return [*x, *y], a
 
-
-def PlottaScatter(ax, datax, datay, funcx=lambda x: x, funcy=lambda y: y, label=None, color='black', size=20.0):
+def PlottaScatter(ax, datax, datay, funcx=lambda x: x, funcy=lambda y: y, label=None, size=20.0,
+                  fit=False, funcfit=lambda x: x, **kargs):
     arg = [funcx(datax), funcy(datay)]
-    return arg, ax.scatter(*arg, label=label, color=color, s=size)
+    a = ax.scatter(*arg, label=label, s=size, **kargs)
+    return arg, a
