@@ -115,7 +115,8 @@ def PlottaLine(ax, datax, datay, fmt="-", lw=2.5, funcx=lambda x: x, funcy=lambd
     a = ax.plot(x[i], y[i], fmt, linewidth=lw, label=label, **kargs)
     for i in range(1, len(x)):
         a = ax.plot(x[i], y[i], fmt, linewidth=lw, **kargs, color=a[0].get_color())
-
+    xret = [float(i.strip()) for i in str(x).replace("[", "").replace("]", "").split(",") if i.strip() != '']
+    yret = [float(i.strip()) for i in str(y).replace("[", "").replace("]", "").split(",") if i.strip() != '']
     if fit:
         from scipy.optimize import curve_fit
         if 'maxfev' in kargs.keys():
@@ -134,11 +135,12 @@ def PlottaLine(ax, datax, datay, fmt="-", lw=2.5, funcx=lambda x: x, funcy=lambd
             p0 = None
 
         popt, pcov = curve_fit(funcfit, funcx(datax), funcy(datay), maxfev=maxfev, method=method, p0=p0)
-        return popt, pcov, [*x, *y], a, *PlottaLine(ax, datax, funcfit(datax, *popt), '--', color=a[0].get_color(), fit=False)
+        return popt, pcov, [xret, yret], a, *PlottaLine(ax, datax, funcfit(datax, *popt), '--', color=a[0].get_color(), fit=False)
 
-    return [*x, *y], a
+    return [xret, yret], a
 
 def PlottaScatter(ax, datax, datay, funcx=lambda x: x, funcy=lambda y: y, label=None, size=20.0, **kargs):
     arg = [funcx(datax), funcy(datay)]
     a = ax.scatter(*arg, label=label, s=size, **kargs)
     return arg, a
+
