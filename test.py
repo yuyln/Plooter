@@ -33,7 +33,15 @@ x = np.linspace(-10, 10, 1000)
 y = 5.3 * np.sin(x + 2.0) + 1.5
 
 fig, ax = plt.subplots()
-popt, pconv, [xb, yb], _, [xf, yf], _ = PlottaLine(ax, x, y, fit=True, funcfit=lambda x, a, b, c, d, e: a * np.sin(b * x + c) * np.exp(-x * e) + d)
+a = PlottaLine(ax, x, y, fit=True, funcfit=lambda x, a, b, c, d, e: a * np.sin(b * x + c) * np.exp(-x) + d)
+yb = a['yb']
+yf = a['yf']
+
+xb = a['xb']
+xf = a['xf']
+
+popt = a['popt']
+pconv = a['pcov']
 
 nY = np.concatenate([yb, yf])
 nX = np.concatenate([xb, xf])

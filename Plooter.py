@@ -2,10 +2,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator, FormatStrFormatter
+from matplotlib import rcParams, cycler
+from scipy.optimize import curve_fit
 
 
 def FixPlot(lx, ly):
-    from matplotlib import rcParams, cycler
     rcParams['font.family'] = 'sans-serif'
     rcParams['font.sans-serif'] = ['Arial']
     rcParams['font.size'] = 40
@@ -51,7 +53,6 @@ def FixPlot(lx, ly):
 
 
 def FixTicks(ax, minorx, minory, multx, multy):
-    from matplotlib.ticker import AutoMinorLocator, MultipleLocator, FormatStrFormatter
     ax.yaxis.set_major_locator(MultipleLocator(multy))
     ax.yaxis.set_minor_locator(AutoMinorLocator(minory))
     ax.xaxis.set_major_locator(MultipleLocator(multx))
@@ -93,11 +94,32 @@ def FixScale(ax, datax, datay, pady=False, padx=False, mirrory=False, mirrorx=Fa
 
 
 def PlottaLine(ax, datax, datay, fmt="-", lw=2.5, funcx=lambda x: x, funcy=lambda y: y, label=None, 
-               contx=0.5, conty=0.5, fit=False, funcfit=lambda x:x, **kargs):
+               contx=0.5, conty=0.5, fit=False, funcfit=lambda x:x, labelfit=None, **kargs):
     x = []
     y = []
     tempx = [funcx(datax[0])]
     tempy = [funcy(datay[0])]
+    maxfev = 1600
+    method = 'lm'
+    p0 = None
+    colofA = 'colorfit' in kargs.keys()
+    fitrangeX = [min(funcx(datax)), max(funcx(datax))]
+
+    if "fitrangeX" in kargs.keys():
+        fitrangeX = kargs["fitrangeX"]
+        kargs.pop("fitrangeX")
+
+    if 'maxfev' in kargs.keys():
+        maxfev = kargs['maxfev']
+        kargs.pop("maxfev")
+
+    if 'method' in kargs.keys():
+        method = kargs['method']
+        kargs.pop("method")
+
+    if 'p0' in kargs.keys():
+        p0 = kargs['p0']
+        kargs.pop("p0")
 
     for i in range(1, len(datax)):
         Desx = np.abs(funcx(datax[i]) - funcx(datax[i - 1])) > contx
@@ -113,35 +135,57 @@ def PlottaLine(ax, datax, datay, fmt="-", lw=2.5, funcx=lambda x: x, funcy=lambd
     x.append(tempx)
     y.append(tempy)
     i = 0
+    if colofA:
+        colorfit = kargs['colorfit']
+        kargs.pop("colorfit")
+    
     a = ax.plot(x[i], y[i], fmt, linewidth=lw, label=label, **kargs)
+    ka = {k: kargs[k] for k in kargs if k != "color"}
     for i in range(1, len(x)):
-        a = ax.plot(x[i], y[i], fmt, linewidth=lw, **kargs, color=a[0].get_color())
+        a = ax.plot(x[i], y[i], fmt, linewidth=lw, **ka, color=a[0].get_color())
     xret = [float(i.strip()) for i in str(x).replace("[", "").replace("]", "").split(",") if i.strip() != '']
     yret = [float(i.strip()) for i in str(y).replace("[", "").replace("]", "").split(",") if i.strip() != '']
     if fit:
-        from scipy.optimize import curve_fit
-        if 'maxfev' in kargs.keys():
-            maxfev = kargs['maxfev']
-        else:
-            maxfev = 1600
-
-        if 'method' in kargs.keys():
-            method = kargs['method']
-        else:
-            method = 'lm'
-
-        if 'p0' in kargs.keys():
-            p0 = kargs['p0']
-        else:
-            p0 = None
-
         popt, pcov = curve_fit(funcfit, funcx(datax), funcy(datay), maxfev=maxfev, method=method, p0=p0)
-        return popt, pcov, [xret, yret], a, *PlottaLine(ax, datax, funcfit(datax, *popt), '--', color=a[0].get_color(), fit=False)
-
-    return [xret, yret], a
+        x_ = funcx(np.linspace(fitrangeX[0], fitrangeX[1], 1000))
+        y_ = funcy(funcfit(x_, *popt))
+        if not colofA:
+            colorfit = a[0].get_color()
+        dret = {"popt": popt, "pcov": pcov, "xb": xret, "yb": yret, "lineb": a}
+        r = PlottaLine(ax, x_, y_, '--', color=colorfit, fit=False, label=labelfit, **ka)
+        dret["xf"] = r["xb"]
+        dret["yf"] = r["yb"]
+        dret["linef"] = r["lineb"]
+        return dret
+    dret = {"xb": xret, "yb": yret, "lineb": a}
+    return dret
 
 def PlottaScatter(ax, datax, datay, funcx=lambda x: x, funcy=lambda y: y, label=None, size=20.0, **kargs):
     arg = [funcx(datax), funcy(datay)]
     a = ax.scatter(*arg, label=label, s=size, **kargs)
     return arg, a
+
+    
+def AddVerticalLine(ax, x, fmt='--', lw=2.5, **kargs):
+    x_ = [x, x]
+    y_ = ax.get_ylim()
+    return ax.plot(x_, y_, fmt, linewidth=lw, **kargs)
+
+def AddVHorizontalLine(ax, y, fmt='--', lw=2.5, **kargs):
+    x_ = ax.get_xlim()
+    y_ = [y, y]
+    return ax.plot(x_, y_, fmt, linewidth=lw, **kargs)
+
+def DecimalPlacesX(ax, n):
+    f = f"%.{n}f"
+    ax.xaxis.set_major_formatter(FormatStrFormatter(f))
+
+def DecimalPlacesY(ax, n):
+    f = f"%.{n}f"
+    ax.yaxis.set_major_formatter(FormatStrFormatter(f))
+
+def DecimalPlaces(ax, nx, ny):
+    DecimalPlacesX(ax, nx)
+    DecimalPlacesY(ax, ny)
+
 
