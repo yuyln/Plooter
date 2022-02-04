@@ -88,6 +88,7 @@ def FixScale(ax, datax, datay, pady=False, padx=False, mirrory=False, mirrorx=Fa
 
     ax.set_xlim([minX, maxX])
     ax.set_ylim([minY, maxY])
+    return [minX, maxX], [minY, maxY]
 
 
 def PlottaLine(ax, datax, datay, fmt="-", lw=2.5, funcx=lambda x: x, funcy=lambda y: y, label=None, 
