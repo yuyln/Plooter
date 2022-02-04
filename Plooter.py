@@ -137,8 +137,7 @@ def PlottaLine(ax, datax, datay, fmt="-", lw=2.5, funcx=lambda x: x, funcy=lambd
 
     return [*x, *y], a
 
-def PlottaScatter(ax, datax, datay, funcx=lambda x: x, funcy=lambda y: y, label=None, size=20.0,
-                  fit=False, funcfit=lambda x: x, **kargs):
+def PlottaScatter(ax, datax, datay, funcx=lambda x: x, funcy=lambda y: y, label=None, size=20.0, **kargs):
     arg = [funcx(datax), funcy(datay)]
     a = ax.scatter(*arg, label=label, s=size, **kargs)
     return arg, a
