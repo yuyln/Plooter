@@ -113,7 +113,7 @@ def PlottaLine(ax, datax, datay, fmt="-", lw=2.5, funcx=lambda x: x, funcy=lambd
     i = 0
     a = ax.plot(x[i], y[i], fmt, linewidth=lw, label=label, **kargs)
     for i in range(1, len(x)):
-        a = ax.plot(x[i], y[i], fmt, linewidth=lw, **kargs)
+        a = ax.plot(x[i], y[i], fmt, linewidth=lw, **kargs, color=a[0].get_color())
 
     if fit:
         from scipy.optimize import curve_fit
