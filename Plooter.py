@@ -1,3 +1,4 @@
+from shutil import which
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -5,6 +6,7 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator, FormatStrFormatter
 from matplotlib import rcParams, cycler
 from scipy.optimize import curve_fit
+import matplotlib
 
 
 def FixPlot(lx, ly):
@@ -91,6 +93,12 @@ def FixScale(ax, datax, datay, pady=False, padx=False, mirrory=False, mirrorx=Fa
     if limx:
         maxX = limx[1]
         minX = limx[0]
+        ld = datax[datax < maxX]
+        ldy = datay[datax < maxX]
+
+        ldy = ldy[ld > minX]
+        ld = ld[ld > minX]
+        return FixScale(ax, ld, ldy, pady, padx, mirrory, mirrorx)
     
     if limy:
         maxY = limy[1]
@@ -206,3 +214,67 @@ def Labels(ax, labelx, labely):
     YLabel(ax, labely)
     XLabel(ax, labelx)
 
+#TODO: colocar pra plottar line e scatter juntas, trocar esquema de checagem
+def AddInset(fig, ax, left, bottom, width, height, lx, ly=False, multx=0.5, multy=0.5, minorx=5, minory=5, 
+             lw=2.5, size=20.0, fmt='-', contx=10.0, conty=10.0, **kargs):
+    ax2 = fig.add_axes([left, bottom, width, height])
+
+    childs = [i for i in ax.get_children() if type(i) == matplotlib.collections.PathCollection or type(i) == matplotlib.lines.Line2D] 
+    x = {"lines2d": [], "pathcole": []}
+    y = {"lines2d": [], "pathcole": []}
+    for i in childs:
+        if type(i) is matplotlib.lines.Line2D:
+            x['lines2d'].append(i.get_xdata())
+            y['lines2d'].append(i.get_ydata())
+        elif type(i) is matplotlib.collections.PathCollection:
+            o = (np.array(i.get_offsets()))
+            x_ = []
+            y_ = []
+            for e in o:
+                x_.append(e[0])
+                y_.append(e[1])
+            x['pathcole'].append(x_)
+            y['pathcole'].append(y_)
+    xScale = np.array([])
+    yScale = np.array([])
+    xpaths = []
+    ypaths = []
+    xlines = []
+    ylines = []
+    try:
+        xlines = np.concatenate([i for i in x['lines2d']])
+        ylines = np.concatenate([i for i in y['lines2d']])
+        PlottaLine(ax2, xlines, ylines, fmt, lw, **kargs)
+
+        xScale = np.concatenate([xScale, xlines])
+        yScale = np.concatenate([yScale, ylines])
+    except ValueError as e:
+        print(f"Error on LINES: {e}")
+
+    try:
+        xpaths = np.concatenate([i for i in x['pathcole']])
+        ypaths = np.concatenate([i for i in y['pathcole']])
+        PlottaScatter(ax2, xpaths, ypaths, size=size, **kargs)
+        xScale = np.concatenate([xScale, xpaths])
+        yScale = np.concatenate([yScale, ypaths])
+    except ValueError as e:
+        print(f"Error on PATHS: {e}")
+
+    ax2.tick_params(axis='x', which='both', labelsize=rcParams['xtick.labelsize'] / 1.8)
+    ax2.tick_params(axis="x", which="major", length=rcParams["xtick.major.size"] / 1.8)
+    ax2.tick_params(axis="x", which="minor", length=rcParams["xtick.minor.size"] / 1.8)
+
+    ax2.tick_params(axis='y', which='both', labelsize=rcParams['ytick.labelsize'] / 1.8)
+    ax2.tick_params(axis="y", which="major", length=rcParams["ytick.major.size"] / 1.8)
+    ax2.tick_params(axis="y", which="minor", length=rcParams["ytick.minor.size"] / 1.8)
+
+    PlottaScatter(ax2, xpaths, ypaths)
+
+    FixTicks(ax2, minorx, minory, multx, multy)
+    FixScale(ax2, xScale, yScale, limx=lx, limy=ly)
+    return ax, ax2
+
+def Zoom(ax, lx, ly):
+    ax.set_xlim(lx)
+    ax.set_ylim(ly)
+    return ax
