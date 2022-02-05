@@ -74,3 +74,17 @@ ax.legend()
 
 fig.savefig("2dScatter.png", dpi=500, bbox_inches='tight')
 
+
+#2D non continuos function
+
+fig, ax = plt.subplots()
+
+x = np.linspace(-10, 10, 1000)
+y = np.tan(x)
+
+PlottaLine(ax, x, y, contx=100, conty=100)
+FixScale(ax, x, y, 1/15, limy=[-4, 4])
+
+Labels(ax, "$x$", r"$\tan(x)$")
+
+fig.savefig("2dNon.png", dpi=500, bbox_inches='tight')

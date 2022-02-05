@@ -59,7 +59,7 @@ def FixTicks(ax, minorx, minory, multx, multy):
     ax.xaxis.set_minor_locator(AutoMinorLocator(minorx))
 
 
-def FixScale(ax, datax, datay, pady=False, padx=False, mirrory=False, mirrorx=False):
+def FixScale(ax, datax, datay, pady=False, padx=False, mirrory=False, mirrorx=False, limx=None, limy=None):
     maxX = max(datax)
     minX = min(datax)
     maxY = max(datay)
@@ -87,6 +87,14 @@ def FixScale(ax, datax, datay, pady=False, padx=False, mirrory=False, mirrorx=Fa
     else:
         minX = minX - padMinX
         maxX = maxX + padMaxX
+
+    if limx:
+        maxX = limx[1]
+        minX = limx[0]
+    
+    if limy:
+        maxY = limy[1]
+        minY = limy[0]
 
     ax.set_xlim([minX, maxX])
     ax.set_ylim([minY, maxY])
@@ -188,4 +196,13 @@ def DecimalPlaces(ax, nx, ny):
     DecimalPlacesX(ax, nx)
     DecimalPlacesY(ax, ny)
 
+def YLabel(ax, label, **kargs):
+    ax.set_ylabel(label, **kargs)
+
+def XLabel(ax, label, **kargs):
+    ax.set_xlabel(label, **kargs)
+
+def Labels(ax, labelx, labely):
+    YLabel(ax, labely)
+    XLabel(ax, labelx)
 
